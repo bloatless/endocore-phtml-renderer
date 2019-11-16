@@ -1,0 +1,31 @@
+{
+    "name": "bloatless/endocore-phtml-renderer",
+    "description": "Phtml renderer component for the Endocore framework.",
+    "keywords": [
+        "php",
+        "phtml",
+        "templating",
+        "renderer",
+        "endocore",
+        "bloatless"
+    ],
+    "license": "MIT",
+    "homepage": "https://bloatless.org",
+    "authors": [
+        {
+            "name": "Simon Samtleben",
+            "email": "foo@bloatless.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bloatless\\Endocore\\Components\\PhtmlRenderer\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.3"
+    }
+}
