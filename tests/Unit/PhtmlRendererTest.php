@@ -103,4 +103,18 @@ class PhtmlRendererTest extends TestCase
         $this->expectException(TemplatingException::class);
         $renderer->render('invalid_layout_view', ['mock' => 'foo']);
     }
+
+    public function testRenderWithInclude()
+    {
+        $renderer = $this->factory->makeRenderer();
+        $out = $renderer->render('view_with_include', []);
+        $this->assertStringContainsString('included content', $out);
+    }
+
+    public function testRenderWithIncludeWithData()
+    {
+        $renderer = $this->factory->makeRenderer();
+        $out = $renderer->render('view_with_include_and_data', []);
+        $this->assertStringContainsString('bar', $out);
+    }
 }

@@ -216,4 +216,19 @@ class PhtmlRenderer implements RendererInterface
             echo $value;
         }
     }
+
+    /**
+     * Includes a partial.
+     *
+     * @param string $partial
+     * @param array $data
+     */
+    protected function include(string $partial, array $data = []): void
+    {
+        $pathToPartial = $this->getPathView($partial);
+        extract($data);
+        ob_start();
+        include $pathToPartial;
+        echo ob_get_clean();
+    }
 }
