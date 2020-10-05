@@ -241,7 +241,7 @@ class PhtmlRenderer implements RendererInterface
      * @param bool $secure
      * @return void
      */
-    protected function out($value, $secure = true): voiHad
+    protected function out($value, $secure = true): void
     {
         if ($secure === true) {
             $value = (string) $value;
