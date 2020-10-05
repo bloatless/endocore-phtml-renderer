@@ -24,7 +24,9 @@ class ViewComponentCompiler implements CompilerInterface
 
         // parse multi-tag components
         $this->compileOpenCloseTags($content);
-        $content = strtr($content, $this->vcReplacements);
+        foreach ($this->vcReplacements as $tag => $html) {
+            $content = str_replace($tag, $html, $content);
+        }
 
         return $content;
     }
@@ -130,12 +132,8 @@ class ViewComponentCompiler implements CompilerInterface
 
     private function compileOpenCloseTags($content): void
     {
-        $cnt = preg_match_all(
-            '/<vc-((?<component>[\w-]+)-#l[0-9]+#i[0-9]+)>(?<content>.*)<\/vc-\1>/Us',
-            $content,
-            $matches,
-            PREG_SET_ORDER
-        );
+        $vcPattern = '/<vc-((?<component>[\w-]+)-#l[0-9]+#i[0-9]+)>(?<content>.*)<\/vc-\1>/Us';
+        $cnt = preg_match_all($vcPattern, $content, $matches, PREG_SET_ORDER);
         if ($cnt === 0) {
             return;
         }
@@ -150,6 +148,9 @@ class ViewComponentCompiler implements CompilerInterface
             $viewComponent = new $componentClass;
             $componentHtml = $viewComponent->render($match['content']);
             $this->vcReplacements[$match[0]] = $componentHtml;
+            if (preg_match($vcPattern, $match['content']) === 1) {
+                $this->compileOpenCloseTags($match['content']);
+            }
         }
     }
 }
