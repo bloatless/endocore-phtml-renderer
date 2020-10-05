@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
+use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\CompilerInterface;
+
 class PhtmlRenderer implements RendererInterface
 {
     /**
@@ -25,6 +27,11 @@ class PhtmlRenderer implements RendererInterface
      * @var array $templateVariables
      */
     protected $templateVariables = [];
+
+    /**
+     * @var array $compilers
+     */
+    private $compilers = [];
 
     /**
      * Returns path containing view files.
@@ -127,6 +134,17 @@ class PhtmlRenderer implements RendererInterface
     }
 
     /**
+     * Registers a compiler to be executed during the render process.
+     *
+     * @param string $compilerName
+     * @param CompilerInterface $compiler
+     */
+    public function addCompiler(string $compilerName, CompilerInterface $compiler): void
+    {
+        $this->compilers[$compilerName] = $compiler;
+    }
+
+    /**
      * Renders given view and returns html code.
 
      * @param string $view
@@ -141,10 +159,11 @@ class PhtmlRenderer implements RendererInterface
         }
         $this->assign($variables);
         $content = $this->renderView();
-        if (empty($this->layout)) {
-            return $content;
+        if (!empty($this->layout)) {
+            $content = $this->renderLayout($content);
         }
-        return $this->renderLayout($content);
+
+        return $this->compileView($content);
     }
 
     /**
@@ -165,6 +184,19 @@ class PhtmlRenderer implements RendererInterface
         }
 
         return $this->renderFile($viewFile);
+    }
+
+    private function compileView(string $content): string
+    {
+        if (empty($this->compilers)) {
+            return $content;
+        }
+        /** @var \Bloatless\Endocore\Components\PhtmlRenderer\Compiler\CompilerInterface $compiler */
+        foreach ($this->compilers as $compiler) {
+            $content = $compiler->compile($content, $this->templateVariables);
+        }
+
+        return $content;
     }
 
     /**
@@ -202,12 +234,14 @@ class PhtmlRenderer implements RendererInterface
 
     /**
      * (Safely) outputs a variable.
-
+     *
+     * @deprecated Use mustache syntax in views.
+     *
      * @param mixed $value
      * @param bool $secure
      * @return void
      */
-    protected function out($value, $secure = true): void
+    protected function out($value, $secure = true): voiHad
     {
         if ($secure === true) {
             $value = (string) $value;
