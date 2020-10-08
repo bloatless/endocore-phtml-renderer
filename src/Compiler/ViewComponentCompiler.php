@@ -35,7 +35,7 @@ class ViewComponentCompiler implements CompilerInterface
 
     private function parseSelfClosingTags($content): string
     {
-        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)\s?\/>/Us', $content, $matches, PREG_SET_ORDER);
+        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)(?<attributes>\s[^>]*)?\/>/Us', $content, $matches, PREG_SET_ORDER);
         if ($cnt === 0) {
             return $content;
         }
@@ -46,7 +46,10 @@ class ViewComponentCompiler implements CompilerInterface
             if (!isset($tagCounts[$componentName])) {
                 $tagCounts[$componentName] = 0;
             }
-            $uniqueTag = sprintf('<vc-%s-#i%d/>', $componentName, $tagCounts[$componentName]);
+            $attributes = $match['attributes'] ?? '';
+            $attributes = trim($attributes);
+            $attributes = (!empty($attributes)) ? ' ' . $attributes : $attributes;
+            $uniqueTag = sprintf('<vc-%s-#i%d%s />', $componentName, $tagCounts[$componentName], $attributes);
             $tagPattern = '#' . preg_quote($match[0]) . '#';
             $content = preg_replace($tagPattern, $uniqueTag, $content, 1);
             $tagCounts[$componentName]++;
@@ -59,7 +62,7 @@ class ViewComponentCompiler implements CompilerInterface
     {
         // collect opening tags
         $openingTagsCount = preg_match_all(
-            '/<vc-(?<component>[\w-]+)>/Us',
+            '/<vc-(?<component>[\w-]+)(\s[^>]*)?>/Us',
             $content,
             $openingTags,
             PREG_OFFSET_CAPTURE|PREG_SET_ORDER
@@ -72,6 +75,8 @@ class ViewComponentCompiler implements CompilerInterface
             $closingTags,
             PREG_OFFSET_CAPTURE|PREG_SET_ORDER
         );
+
+        // @todo handle opening/closing tag-count mismatch
 
         $tags = [];
         foreach ($openingTags as $item) {
@@ -148,7 +153,7 @@ class ViewComponentCompiler implements CompilerInterface
 
     private function compileSelfClosingTags($content): void
     {
-        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)-#i[0-9]+\/>/Us', $content, $matches, PREG_SET_ORDER);
+        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)-#i[0-9]+\s\/>/Us', $content, $matches, PREG_SET_ORDER);
         if ($cnt === 0) {
             return;
         }
