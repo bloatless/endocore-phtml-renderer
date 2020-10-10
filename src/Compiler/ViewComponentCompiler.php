@@ -62,7 +62,7 @@ class ViewComponentCompiler implements CompilerInterface
     {
         // collect opening tags
         $openingTagsCount = preg_match_all(
-            '/<vc-(?<component>[\w-]+)(\s[^>]*)?>/Us',
+            '/<vc-(?<component>[\w-]+)(?<attributes>\s[^>]*)?>/Us',
             $content,
             $openingTags,
             PREG_OFFSET_CAPTURE|PREG_SET_ORDER
@@ -84,6 +84,7 @@ class ViewComponentCompiler implements CompilerInterface
                 'tag' => $item[0][0],
                 'offset' => $item[0][1],
                 'component' => $item['component'][0],
+                'attributes' => $item['attributes'][0] ?? '',
                 'type' => 'opening',
             ];
         }
@@ -139,7 +140,7 @@ class ViewComponentCompiler implements CompilerInterface
         // replace component tag with unique tags
         foreach ($tags as $tag) {
             if ($tag->type === 'opening') {
-                $uniqueTag = sprintf('<vc-%s-#l%d#i%d>', $tag->component, $tag->level, $tag->levelItem);
+                $uniqueTag = sprintf('<vc-%s-#l%d#i%d%s>', $tag->component, $tag->level, $tag->levelItem, $tag->attributes);
             }
             if ($tag->type === 'closing') {
                 $uniqueTag = sprintf('</vc-%s-#l%d#i%d>', $tag->component, $tag->level, $tag->levelItem);
@@ -153,7 +154,7 @@ class ViewComponentCompiler implements CompilerInterface
 
     private function compileSelfClosingTags($content): void
     {
-        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)-#i[0-9]+\s\/>/Us', $content, $matches, PREG_SET_ORDER);
+        $cnt = preg_match_all('/<vc-(?<component>[\w-]+)-#i[0-9]+(?<attributes>\s[^>]*)?\/>/Us', $content, $matches, PREG_SET_ORDER);
         if ($cnt === 0) {
             return;
         }
@@ -163,8 +164,21 @@ class ViewComponentCompiler implements CompilerInterface
                 // @todo Error: Unknown view component
                 continue;
             }
+
+            $tagAttributes = $match['attributes'] ?? '';
+            $tagAttributes = trim($tagAttributes);
+            $attributes = [];
+            if ($tagAttributes !== '') {
+                $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $tagAttributes, $attributeMatches, PREG_SET_ORDER);
+                if ($attrCount > 0) {
+                    foreach ($attributeMatches as $attr) {
+                        $attributes[$attr[1]] = $attr[2];
+                    }
+                }
+            }
+
             $componentClass = $this->viewComponents[$componentName];
-            $viewComponent = new $componentClass();
+            $viewComponent = new $componentClass('', $attributes);
             $componentHtml = $viewComponent->render();
             $this->vcReplacements[$match[0]] = $componentHtml;
         }
@@ -172,7 +186,7 @@ class ViewComponentCompiler implements CompilerInterface
 
     private function compileOpenCloseTags($content): void
     {
-        $vcPattern = '/<vc-((?<component>[\w-]+)-#l[0-9]+#i[0-9]+)>(?<content>.*)<\/vc-\1>/Us';
+        $vcPattern = '/<vc-((?<component>[\w-]+)-#l[0-9]+#i[0-9]+)(?<attributes>\s[^>]*)?>(?<content>.*)<\/vc-\1>/Us';
         $cnt = preg_match_all($vcPattern, $content, $matches, PREG_SET_ORDER);
         if ($cnt === 0) {
             return;
@@ -184,8 +198,21 @@ class ViewComponentCompiler implements CompilerInterface
                 // @todo Error: Unknown view component
                 continue;
             }
+
+            $tagAttributes = $match['attributes'] ?? '';
+            $tagAttributes = trim($tagAttributes);
+            $attributes = [];
+            if ($tagAttributes !== '') {
+                $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $tagAttributes, $attributeMatches, PREG_SET_ORDER);
+                if ($attrCount > 0) {
+                    foreach ($attributeMatches as $attr) {
+                        $attributes[$attr[1]] = $attr[2];
+                    }
+                }
+            }
+
             $componentClass = $this->viewComponents[$componentName];
-            $viewComponent = new $componentClass($match['content']);
+            $viewComponent = new $componentClass($match['content'], $attributes);
             $componentHtml = $viewComponent->render();
             $this->vcReplacements[$match[0]] = $componentHtml;
             if (preg_match($vcPattern, $match['content']) === 1) {
