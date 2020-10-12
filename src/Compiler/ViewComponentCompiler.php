@@ -10,6 +10,8 @@ class ViewComponentCompiler implements CompilerInterface
 
     private $vcReplacements = [];
 
+    private $templateVariables = [];
+
     public function setViewComponents(array $viewComponents): void
     {
         $this->viewComponents = $viewComponents;
@@ -17,6 +19,7 @@ class ViewComponentCompiler implements CompilerInterface
 
     public function compile(string $content, array $templateVariables = []): string
     {
+        $this->templateVariables = $templateVariables;
         $content = $this->parseSelfClosingTags($content);
         $this->compileSelfClosingTags($content);
         foreach ($this->vcReplacements as $tag => $html) {
@@ -172,7 +175,12 @@ class ViewComponentCompiler implements CompilerInterface
                 $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $tagAttributes, $attributeMatches, PREG_SET_ORDER);
                 if ($attrCount > 0) {
                     foreach ($attributeMatches as $attr) {
-                        $attributes[$attr[1]] = $attr[2];
+                        if (substr($attr[1], 0, 1) === ':') {
+                            $tmplVarKey = substr($attr[2], 1);
+                            $attributes[$tmplVarKey] = $this->templateVariables[$tmplVarKey] ?? null;
+                        } else {
+                            $attributes[$attr[1]] = $attr[2];
+                        }
                     }
                 }
             }
@@ -206,7 +214,12 @@ class ViewComponentCompiler implements CompilerInterface
                 $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $tagAttributes, $attributeMatches, PREG_SET_ORDER);
                 if ($attrCount > 0) {
                     foreach ($attributeMatches as $attr) {
-                        $attributes[$attr[1]] = $attr[2];
+                        if (substr($attr[1], 0, 1) === ':') {
+                            $tmplVarKey = substr($attr[2], 1);
+                            $attributes[$tmplVarKey] = $this->templateVariables[$tmplVarKey] ?? null;
+                        } else {
+                            $attributes[$attr[1]] = $attr[2];
+                        }
                     }
                 }
             }
