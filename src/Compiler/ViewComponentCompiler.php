@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
 
-class ViewComponentCompiler implements CompilerInterface
+class ViewComponentCompiler
 {
     private $viewComponents = [];
 
@@ -226,7 +226,7 @@ class ViewComponentCompiler implements CompilerInterface
 
             $componentClass = $this->viewComponents[$componentName];
             $viewComponent = new $componentClass($match['content'], $attributes);
-            $componentHtml = $viewComponent->render();
+            $componentHtml = $viewComponent->__invoke();
             $this->vcReplacements[$match[0]] = $componentHtml;
             if (preg_match($vcPattern, $match['content']) === 1) {
                 $this->compileOpenCloseTags($match['content']);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
-use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\MustacheTagCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewCompiler;
 use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewComponentCompiler;
 
 class Factory
@@ -12,7 +12,7 @@ class Factory
     /**
      * @var array $config
      */
-    protected $config = [];
+    protected array $config = [];
 
     public function __construct(array $config)
     {
@@ -28,17 +28,19 @@ class Factory
     public function makeRenderer(): PhtmlRenderer
     {
         $pathViews = $this->config['path_views'] ?? '';
-        $renderer = new PhtmlRenderer;
-        $renderer->setPathViews($pathViews);
+        $compilePath = $this->config['compile_path'] ?? '';
+        $viewComponents = $this->config['view_components'] ?? [];
 
-        // add compiler for mustache tags
-        $mustacheTagCompiler = new MustacheTagCompiler($this->config);
-        $renderer->addCompiler('mustacheTagCompiler', $mustacheTagCompiler);
+        $viewComponentCompiler = new ViewComponentCompiler();
+        $viewComponentCompiler->setViewComponents($viewComponents);
 
-        // add compiler for view-components
-        $viewComponentCompiler = new ViewComponentCompiler($this->config);
-        $viewComponentCompiler->setViewComponents($this->config['view_components'] ?? []);
-        $renderer->addCompiler('viewComponentCompiler', $viewComponentCompiler);
+        $viewCompiler = new ViewCompiler($viewComponentCompiler);
+        $viewCompiler->setViewPath($pathViews);
+        $viewCompiler->setCompilePath($compilePath);
+
+        $viewRenderer = new ViewRenderer();
+
+        $renderer = new PhtmlRenderer($viewCompiler, $viewRenderer);
 
         return $renderer;
     }

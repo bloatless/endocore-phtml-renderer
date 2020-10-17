@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
 
-class MustacheTagCompiler implements CompilerInterface
+class MustacheTagCompiler extends Compiler implements CompilerInterface
 {
     private $templateVariables = [];
 

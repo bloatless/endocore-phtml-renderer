@@ -26,5 +26,10 @@ abstract class Component
         $this->attributes = $attributes;
     }
 
-    abstract public function render(): string;
+    protected function render(string $viewName, array $templateVariables = []): string
+    {
+
+    }
+
+    abstract public function __invoke(): string;
 }
