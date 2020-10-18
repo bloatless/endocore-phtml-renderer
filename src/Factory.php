@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
+use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\MustacheTagCompiler;
 use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewCompiler;
 use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewComponentCompiler;
 
@@ -34,7 +35,9 @@ class Factory
         $viewComponentCompiler = new ViewComponentCompiler($this->config);
         $viewComponentCompiler->setViewComponents($viewComponents);
 
-        $viewCompiler = new ViewCompiler($viewComponentCompiler);
+        $mustacheTagCompiler = new MustacheTagCompiler();
+
+        $viewCompiler = new ViewCompiler($viewComponentCompiler, $mustacheTagCompiler);
         $viewCompiler->setViewPath($pathViews);
         $viewCompiler->setCompilePath($compilePath);
 

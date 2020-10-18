@@ -20,9 +20,12 @@ class ViewCompiler
 
     private ViewComponentCompiler $viewComponentCompiler;
 
-    public function __construct(ViewComponentCompiler $viewComponentCompiler)
+    private MustacheTagCompiler $mustacheTagCompiler;
+
+    public function __construct(ViewComponentCompiler $viewComponentCompiler, MustacheTagCompiler $mustacheTagCompiler)
     {
         $this->viewComponentCompiler = $viewComponentCompiler;
+        $this->mustacheTagCompiler = $mustacheTagCompiler;
     }
 
     public function __invoke(string $viewName): string
@@ -84,6 +87,8 @@ class ViewCompiler
 
     protected function compileMustacheTags(string $viewContent): string
     {
+        $viewContent = $this->mustacheTagCompiler->compile($viewContent);
+
         return $viewContent;
     }
 

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
 
-class MustacheTagCompiler extends Compiler implements CompilerInterface
+class MustacheTagCompiler
 {
-    private $templateVariables = [];
-
     private $replacements = [];
 
-    public function compile(string $source, array $templateVariables = []): string
+    public function compile(string $source): string
     {
         $this->replacements = [];
-        $this->templateVariables = $templateVariables;
         $this->parseOutTags($source);
         $this->parseUnescapedOutTags($source);
         $source = strtr($source, $this->replacements);
@@ -23,37 +20,33 @@ class MustacheTagCompiler extends Compiler implements CompilerInterface
 
     private function parseOutTags(string $source): void
     {
-        $outTagCount = preg_match_all('/\{\{\s\$([\w-]+)\s\}\}/Us', $source, $matches, PREG_SET_ORDER);
+        $outTagCount = preg_match_all('/\{\{\s(\$[^\s]+)\s\}\}/Us', $source, $matches, PREG_SET_ORDER);
         if ($outTagCount === 0) {
             return;
         }
 
-        $this->addOutReplacements($matches);
+        $this->addReplacements($matches);
     }
 
     private function parseUnescapedOutTags(string $source): void
     {
-        $outTagCount = preg_match_all('/\{\!\!\s\$([\w-]+)\s\!\!\}/Us', $source, $matches, PREG_SET_ORDER);
+        $outTagCount = preg_match_all('/\{\!\!\s(\$[^\s]+)\s\!\!\}/Us', $source, $matches, PREG_SET_ORDER);
         if ($outTagCount === 0) {
             return;
         }
 
-        $this->addOutReplacements($matches, false);
+        $this->addReplacements($matches, false);
     }
 
-    private function addOutReplacements(array $matches, bool $escaped = true): void
+    private function addReplacements(array $matches, bool $escaped = true): void
     {
         foreach ($matches as $match) {
             $tag = $match[0];
             $varName = $match[1];
-            if (!isset($this->templateVariables[$varName])) {
-                continue;
-            }
-            $varContent = (string) $this->templateVariables[$varName];
             if ($escaped === true) {
-                $this->replacements[$tag] = htmlentities($varContent);
+                $this->replacements[$tag] = sprintf('<?php echo htmlentities(%s); ?>', $varName);
             } else {
-                $this->replacements[$tag] = $varContent;
+                $this->replacements[$tag] = sprintf('<?php echo %s; ?>', $varName);
             }
         }
     }
