@@ -31,7 +31,7 @@ class Factory
         $compilePath = $this->config['compile_path'] ?? '';
         $viewComponents = $this->config['view_components'] ?? [];
 
-        $viewComponentCompiler = new ViewComponentCompiler();
+        $viewComponentCompiler = new ViewComponentCompiler($this->config);
         $viewComponentCompiler->setViewComponents($viewComponents);
 
         $viewCompiler = new ViewCompiler($viewComponentCompiler);
@@ -43,5 +43,19 @@ class Factory
         $renderer = new PhtmlRenderer($viewCompiler, $viewRenderer);
 
         return $renderer;
+    }
+
+    public function makeViewComponent(string $componentName)
+    {
+        $viewComponents = $this->config['view_components'] ?? [];
+        if (!isset($viewComponents[$componentName])) {
+            throw new TemplatingException('Unknown view component');
+        }
+
+        $phtmlRenderer = $this->makeRenderer();
+        $componentClass = $viewComponents[$componentName];
+        $viewComponent = new $componentClass($phtmlRenderer);
+
+        return $viewComponent;
     }
 }

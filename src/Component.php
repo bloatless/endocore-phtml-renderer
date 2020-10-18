@@ -6,14 +6,15 @@ namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
 abstract class Component
 {
-    protected $content = '';
+    protected PhtmlRenderer $phtmlRenderer;
 
-    protected $attributes = [];
+    protected string $content = '';
 
-    public function __construct(string $content = '', array $attributes = [])
+    protected array $attributes = [];
+
+    public function __construct(PhtmlRenderer $phtmlRenderer)
     {
-        $this->content = $content;
-        $this->attributes = $attributes;
+        $this->phtmlRenderer = $phtmlRenderer;
     }
 
     public function setContent(string $content): void
@@ -28,7 +29,7 @@ abstract class Component
 
     protected function render(string $viewName, array $templateVariables = []): string
     {
-
+        return $this->phtmlRenderer->render($viewName, $templateVariables);
     }
 
     abstract public function __invoke(): string;

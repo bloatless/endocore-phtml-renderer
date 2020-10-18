@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
 
+use Bloatless\Endocore\Components\PhtmlRenderer\Factory;
+
 class ViewComponentCompiler
 {
-    private $viewComponents = [];
+    private array $config = [];
 
-    private $vcReplacements = [];
+    private array $viewComponents = [];
 
-    private $templateVariables = [];
+    private array $vcReplacements = [];
+
+    private array $templateVariables = [];
+
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+    }
 
     public function setViewComponents(array $viewComponents): void
     {
@@ -224,8 +233,10 @@ class ViewComponentCompiler
                 }
             }
 
-            $componentClass = $this->viewComponents[$componentName];
-            $viewComponent = new $componentClass($match['content'], $attributes);
+            $factory = new Factory($this->config);
+            $viewComponent = $factory->makeViewComponent($componentName);
+            $viewComponent->setContent($match['content']);
+            $viewComponent->setAttributes($attributes);
             $componentHtml = $viewComponent->__invoke();
             $this->vcReplacements[$match[0]] = $componentHtml;
             if (preg_match($vcPattern, $match['content']) === 1) {
