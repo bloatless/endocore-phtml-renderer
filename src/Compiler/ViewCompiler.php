@@ -35,6 +35,7 @@ class ViewCompiler
 
         // attach layout
         $viewContent = $this->attachLayout($viewContent);
+        $viewContent = $this->attachIncludes($viewContent);
 
         // - compile view components
         $viewContent = $this->compileViewComponents($viewContent);
@@ -74,6 +75,26 @@ class ViewCompiler
             );
         }
         $viewContent = str_replace('<!-- $view -->', $viewContent, $layoutContent);
+
+        return $viewContent;
+    }
+
+    protected function attachIncludes(string $viewContent): string
+    {
+        $includePattern = '/\{\{\sinclude\(\'(.+)\'\)\s\}\}/Us';
+        $matchCount = preg_match_all($includePattern, $viewContent, $matches, PREG_SET_ORDER);
+        if ($matchCount === 0) {
+            return $viewContent;
+        }
+        foreach ($matches as $match) {
+            $tag = $match[0];
+            $includeName = $match[1];
+            $includeContent = $this->getViewContent($includeName);
+            if (preg_match($includePattern, $viewContent) > 0) {
+                $includeContent = $this->attachIncludes($includeContent);
+            }
+            $viewContent = str_replace($tag, $includeContent, $viewContent);
+        }
 
         return $viewContent;
     }
