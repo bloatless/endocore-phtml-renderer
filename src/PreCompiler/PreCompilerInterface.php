@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
+namespace Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler;
 
-interface CompilerInterface
+interface PreCompilerInterface
 {
     public function compile(string $content, array $templateVariables = []): string;
 }

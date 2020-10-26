@@ -12,6 +12,8 @@ abstract class Component
 
     protected array $attributes = [];
 
+    protected array $data = [];
+
     public function __construct(PhtmlRenderer $phtmlRenderer)
     {
         $this->phtmlRenderer = $phtmlRenderer;
@@ -25,6 +27,26 @@ abstract class Component
     public function setAttributes(array $attributes): void
     {
         $this->attributes = $attributes;
+    }
+
+    public function setData(array $data): void
+    {
+        $this->data = $data;
+    }
+
+    public function start(): string
+    {
+        ob_start();
+
+        return '';
+    }
+
+    public function end(): string
+    {
+        $content = ob_get_clean();
+        $this->setContent($content);
+
+        return $this->__invoke();
     }
 
     protected function render(string $viewName, array $templateVariables = []): string

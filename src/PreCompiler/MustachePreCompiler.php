@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Bloatless\Endocore\Components\PhtmlRenderer\Compiler;
+namespace Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler;
 
-class MustacheTagCompiler
+class MustachePreCompiler implements PreCompilerInterface
 {
     private $replacements = [];
 
-    public function compile(string $source): string
+    public function compile(string $content, array $templateVariables = []): string
     {
         $this->replacements = [];
-        $this->parseOutTags($source);
-        $this->parseUnescapedOutTags($source);
-        $source = strtr($source, $this->replacements);
+        $this->parseOutTags($content);
+        $this->parseUnescapedOutTags($content);
+        $content = strtr($content, $this->replacements);
 
-        return $source;
+        return $content;
     }
 
     private function parseOutTags(string $source): void

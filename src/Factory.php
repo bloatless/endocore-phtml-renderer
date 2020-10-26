@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
-use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\MustacheTagCompiler;
-use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewCompiler;
-use Bloatless\Endocore\Components\PhtmlRenderer\Compiler\ViewComponentCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler\SubviewPreCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler\LayoutPreCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler\MustachePreCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler\ViewComponentPreCompiler;
+use Bloatless\Endocore\Components\PhtmlRenderer\Renderer\SubviewRenderer;
+use Bloatless\Endocore\Components\PhtmlRenderer\Renderer\ViewComponentRenderer;
 
 class Factory
 {
@@ -32,33 +35,28 @@ class Factory
         $compilePath = $this->config['compile_path'] ?? '';
         $viewComponents = $this->config['view_components'] ?? [];
 
-        $viewComponentCompiler = new ViewComponentCompiler($this->config);
-        $viewComponentCompiler->setViewComponents($viewComponents);
-
-        $mustacheTagCompiler = new MustacheTagCompiler();
-
-        $viewCompiler = new ViewCompiler($viewComponentCompiler, $mustacheTagCompiler);
-        $viewCompiler->setViewPath($pathViews);
-        $viewCompiler->setCompilePath($compilePath);
-
+        // prepare renderer
         $viewRenderer = new ViewRenderer();
+        $subviewRenderer = new SubviewRenderer($this);
+        $viewComponentRenderer = new ViewComponentRenderer($this, $viewComponents);
+        $viewRenderer->setRenderer('subview', $subviewRenderer);
+        $viewRenderer->setRenderer('viewComponent', $viewComponentRenderer);
 
-        $renderer = new PhtmlRenderer($viewCompiler, $viewRenderer);
+        // prepare pre-compiler
+        $layoutPreCompiler = new LayoutPreCompiler();
+        $layoutPreCompiler->setViewPath($pathViews);
+        $mustachePreCompiler = new MustachePreCompiler();
+        $subviewPreCompiler = new SubviewPreCompiler();
+        $viewComponentPreCompiler = new ViewComponentPreCompiler();
+
+        $renderer = new PhtmlRenderer($viewRenderer);
+        $renderer->setViewPath($pathViews);
+        $renderer->setCompilePath($compilePath);
+        $renderer->setPreCompiler($layoutPreCompiler);
+        $renderer->setPreCompiler($mustachePreCompiler);
+        $renderer->setPreCompiler($subviewPreCompiler);
+        $renderer->setPreCompiler($viewComponentPreCompiler);
 
         return $renderer;
-    }
-
-    public function makeViewComponent(string $componentName)
-    {
-        $viewComponents = $this->config['view_components'] ?? [];
-        if (!isset($viewComponents[$componentName])) {
-            throw new TemplatingException('Unknown view component');
-        }
-
-        $phtmlRenderer = $this->makeRenderer();
-        $componentClass = $viewComponents[$componentName];
-        $viewComponent = new $componentClass($phtmlRenderer);
-
-        return $viewComponent;
     }
 }
