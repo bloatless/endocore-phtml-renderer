@@ -6,5 +6,5 @@ namespace Bloatless\Endocore\Components\PhtmlRenderer\Renderer;
 
 interface RendererInterface
 {
-    public function render(array $arguments): string;
+    public function render(array $arguments, array $templateVariables): string;
 }

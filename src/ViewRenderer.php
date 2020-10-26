@@ -10,8 +10,11 @@ class ViewRenderer
 {
     private array $renderers;
 
+    private array $templateVariables;
+
     public function render(string $pathToCompiledView, array $templateVariables = []): string
     {
+        $this->templateVariables = $templateVariables;
         extract($templateVariables);
         ob_start();
         include $pathToCompiledView;
@@ -27,7 +30,7 @@ class ViewRenderer
 
         /** @var ViewRendererInterface $renderer */
         $renderer = $this->renderers[$rendererName];
-        echo $renderer->render($arguments);
+        echo $renderer->render($arguments, $this->templateVariables);
     }
 
     public function setRenderer(string $rendererName, ViewRendererInterface $renderer): void

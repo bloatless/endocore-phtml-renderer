@@ -6,8 +6,11 @@ namespace Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler;
 
 class ViewComponentPreCompiler implements PreCompilerInterface
 {
+    protected array $templateVariables = [];
+
     public function compile(string $viewContent, array $templateVariables = []): string
     {
+        $this->templateVariables = $templateVariables;
         $viewContent = $this->parseSelfClosingTags($viewContent);
         $viewContent = $this->parseOpenCloseTags($viewContent);
 
@@ -27,14 +30,13 @@ class ViewComponentPreCompiler implements PreCompilerInterface
             if (!isset($tagCounts[$componentName])) {
                 $tagCounts[$componentName] = 0;
             }
-            $attributes = $match['attributes'] ?? '';
-            $attributes = trim($attributes);
-            $attributes = (!empty($attributes)) ? ' ' . $attributes : $attributes;
+            $attributes = base64_encode(trim($match['attributes']));
             $componentHash = $this->getComponentHash($componentName, 0, $tagCounts[$componentName]);
             $uniqueTag = sprintf(
-                '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\']); ?>',
+                '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\']); ?>',
                 $componentHash,
                 $componentName,
+                $attributes,
             );
             $uniqueTag .= sprintf(
                 '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'end\']); ?>',
@@ -132,11 +134,12 @@ class ViewComponentPreCompiler implements PreCompilerInterface
         foreach ($tags as $tag) {
             $componentHash = $this->getComponentHash($tag->component, $tag->level, $tag->levelItem);
             if ($tag->type === 'opening') {
-                // @todo handle attributes
+                $attributes = base64_encode(trim($tag->attributes));
                 $uniqueTag = sprintf(
-                    '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\']); ?>',
+                    '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\']); ?>',
                     $componentHash,
                     $tag->component,
+                    $attributes,
                 );
             }
             if ($tag->type === 'closing') {

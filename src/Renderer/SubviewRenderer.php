@@ -15,11 +15,12 @@ class SubviewRenderer implements RendererInterface
         $this->phtmlRendererFactory = $phtmlRendererFactory;
     }
 
-    public function render(array $arguments): string
+    public function render(array $arguments, array $templateVariables): string
     {
+        // includes have their own scope so we override template variables
+        $templateVariables = $arguments['subviewArguments'] ?? [];
         $phtmlRenderer = $this->phtmlRendererFactory->makeRenderer();
         $viewName = $arguments['viewName'];
-        $templateVariables = $arguments['subviewArguments'] ?? [];
 
         return $phtmlRenderer->render($viewName, $templateVariables);
     }
