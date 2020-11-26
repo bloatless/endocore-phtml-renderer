@@ -7,16 +7,43 @@ namespace Bloatless\Endocore\Components\PhtmlRenderer\Renderer;
 use Bloatless\Endocore\Components\PhtmlRenderer\Factory as PhtmlRendererFactory;
 use Bloatless\Endocore\Components\PhtmlRenderer\TemplatingException;
 
+/**
+ * Renders view-components within a view.
+ *
+ * @package Bloatless\Endocore\Components\PhtmlRenderer\Renderer
+ */
 class ViewComponentRenderer implements RendererInterface
 {
+    /**
+     * @var PhtmlRendererFactory $phtmlRendererFactory
+     */
     private PhtmlRendererFactory $phtmlRendererFactory;
 
+    /**
+     * A map of view-component-names and corresponding classes.
+     *
+     * @var array $viewComponentClasses
+     */
     private array $viewComponentClasses;
 
+    /**
+     * Holds instances of view components.
+     *
+     * @var array $viewComponents
+     */
     private array $viewComponents;
 
+    /**
+     * Data passed to the view.
+     *
+     * @var array $templateVariables
+     */
     private array $templateVariables;
 
+    /**
+     * @param PhtmlRendererFactory $phtmlRendererFactory
+     * @param array $viewComponentClasses
+     */
     public function __construct(PhtmlRendererFactory $phtmlRendererFactory, array $viewComponentClasses)
     {
         $this->phtmlRendererFactory = $phtmlRendererFactory;
@@ -25,6 +52,14 @@ class ViewComponentRenderer implements RendererInterface
         $this->templateVariables = [];
     }
 
+    /**
+     * Creates a view-component instance and returns the html-code of the rendered component.
+     *
+     * @param array $arguments
+     * @param array $templateVariables
+     * @return string
+     * @throws TemplatingException
+     */
     public function render(array $arguments, array $templateVariables): string
     {
         $this->templateVariables = $templateVariables;
@@ -52,6 +87,13 @@ class ViewComponentRenderer implements RendererInterface
         }
     }
 
+    /**
+     * Creates a new view-component instance.
+     *
+     * @param string $componentType
+     * @param string $componentHash
+     * @throws TemplatingException
+     */
     private function initComponent(string $componentType, string $componentHash): void
     {
         if (isset($this->viewComponents[$componentHash])) {
@@ -63,6 +105,12 @@ class ViewComponentRenderer implements RendererInterface
         $this->viewComponents[$componentHash] = new $componentClass($phtmlRenderer);
     }
 
+    /**
+     * Prepares and returns the attributes passed to a view-component via arguments (within the view).
+     *
+     * @param string $attributeString
+     * @return array
+     */
     private function getAttributes(string $attributeString): array
     {
         if (empty($attributeString)) {

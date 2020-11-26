@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer;
 
+/**
+ * @package Bloatless\Endocore\Components\PhtmlRenderer
+ * @deprecated This should be a contract in a separate repository.
+ */
 interface RendererInterface
 {
     /**

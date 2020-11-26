@@ -39,8 +39,8 @@ class Factory
         $viewRenderer = new ViewRenderer();
         $subviewRenderer = new SubviewRenderer($this);
         $viewComponentRenderer = new ViewComponentRenderer($this, $viewComponents);
-        $viewRenderer->setRenderer('subview', $subviewRenderer);
-        $viewRenderer->setRenderer('viewComponent', $viewComponentRenderer);
+        $viewRenderer->addRenderer('subview', $subviewRenderer);
+        $viewRenderer->addRenderer('viewComponent', $viewComponentRenderer);
 
         // prepare pre-compiler
         $layoutPreCompiler = new LayoutPreCompiler();
@@ -52,10 +52,10 @@ class Factory
         $renderer = new PhtmlRenderer($viewRenderer);
         $renderer->setViewPath($pathViews);
         $renderer->setCompilePath($compilePath);
-        $renderer->setPreCompiler($layoutPreCompiler);
-        $renderer->setPreCompiler($mustachePreCompiler);
-        $renderer->setPreCompiler($subviewPreCompiler);
-        $renderer->setPreCompiler($viewComponentPreCompiler);
+        $renderer->addPreCompiler($layoutPreCompiler);
+        $renderer->addPreCompiler($mustachePreCompiler);
+        $renderer->addPreCompiler($subviewPreCompiler);
+        $renderer->addPreCompiler($viewComponentPreCompiler);
 
         return $renderer;
     }

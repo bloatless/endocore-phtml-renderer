@@ -6,10 +6,28 @@ namespace Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler;
 
 use Bloatless\Endocore\Components\PhtmlRenderer\TemplatingException;
 
+/**
+ * The LayoutPreCompiler handles extends, and includes within a view.
+ *
+ * @package Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler
+ */
 class LayoutPreCompiler implements PreCompilerInterface
 {
+    /**
+     * Path to directory containing the view files.
+     *
+     * @var string $viewPath
+     */
     private string $viewPath;
 
+    /**
+     * Compiles "includes", and "extends" within a view.
+     *
+     * @param string $viewContent
+     * @param array $templateVariables
+     * @return string
+     * @throws TemplatingException
+     */
     public function compile(string $viewContent, array $templateVariables = []): string
     {
         $viewContent = $this->compileExtends($viewContent);
@@ -18,6 +36,13 @@ class LayoutPreCompiler implements PreCompilerInterface
         return $viewContent;
     }
 
+    /**
+     * Puts content of a view into the "layout" which is extended.
+     *
+     * @param string $viewContent
+     * @return string
+     * @throws TemplatingException
+     */
     private function compileExtends(string $viewContent): string
     {
         $matchCount = preg_match('/<!-- extends "(.+)" -->/Usi', $viewContent, $matches);
@@ -42,6 +67,13 @@ class LayoutPreCompiler implements PreCompilerInterface
         return $viewContent;
     }
 
+    /**
+     * Puts content from an include into the view.
+     *
+     * @param string $viewContent
+     * @return string
+     * @throws TemplatingException
+     */
     private function compileIncludes(string $viewContent): string
     {
         $includePattern = '/\{\{\sinclude\(\'(.+)\'\)\s\}\}/Us';
@@ -66,6 +98,11 @@ class LayoutPreCompiler implements PreCompilerInterface
         return $viewContent;
     }
 
+    /**
+     * @param string $viewPath
+     * @throws TemplatingException
+     * @return void
+     */
     public function setViewPath(string $viewPath): void
     {
         if (!file_exists($viewPath)) {

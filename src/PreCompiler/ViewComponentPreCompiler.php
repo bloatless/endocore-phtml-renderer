@@ -4,10 +4,24 @@ declare(strict_types=1);
 
 namespace Bloatless\Endocore\Components\PhtmlRenderer\PreCompiler;
 
+use Bloatless\Endocore\Components\PhtmlRenderer\TemplatingException;
+
 class ViewComponentPreCompiler implements PreCompilerInterface
 {
+    /**
+     * Data passed to the view.
+     *
+     * @var array $templateVariables
+     */
     protected array $templateVariables = [];
 
+    /**
+     * Pre-compiles view-components.
+     *
+     * @param string $viewContent
+     * @param array $templateVariables
+     * @return string
+     */
     public function compile(string $viewContent, array $templateVariables = []): string
     {
         $this->templateVariables = $templateVariables;
@@ -17,6 +31,12 @@ class ViewComponentPreCompiler implements PreCompilerInterface
         return $viewContent;
     }
 
+    /**
+     * Finds self-closing view-component tags and replaces them with php-code.
+     *
+     * @param $content
+     * @return string
+     */
     private function parseSelfClosingTags($content): string
     {
         $cnt = preg_match_all('/<vc-(?<component>[\w-]+)(?<attributes>\s[^>]*)?\/>/Us', $content, $matches, PREG_SET_ORDER);
@@ -51,6 +71,13 @@ class ViewComponentPreCompiler implements PreCompilerInterface
         return $content;
     }
 
+    /**
+     * Finds opening and closing view-component tags and replaces them with php-code.
+     *
+     * @param $content
+     * @return string
+     * @throws TemplatingException
+     */
     private function parseOpenCloseTags($content): string
     {
         // collect opening tags
@@ -69,7 +96,11 @@ class ViewComponentPreCompiler implements PreCompilerInterface
             PREG_OFFSET_CAPTURE|PREG_SET_ORDER
         );
 
-        // @todo handle opening/closing tag-count mismatch
+        if ($openingTagsCount !== $closingTagsCount) {
+            throw new TemplatingException(
+                'View component tag-count mismatch. (Number of opening tags does not match number of closing tags.)'
+            );
+        }
 
         $tags = [];
         foreach ($openingTags as $item) {
@@ -130,7 +161,7 @@ class ViewComponentPreCompiler implements PreCompilerInterface
             }
         }
 
-        // replace component tag with unique tags
+        // replace component tags with php-code
         foreach ($tags as $tag) {
             $componentHash = $this->getComponentHash($tag->component, $tag->level, $tag->levelItem);
             if ($tag->type === 'opening') {
@@ -156,6 +187,14 @@ class ViewComponentPreCompiler implements PreCompilerInterface
         return $content;
     }
 
+    /**
+     * Generate a unique hash from a view-component tag (and its attributes).
+     *
+     * @param string $componentType
+     * @param int $level
+     * @param int $item
+     * @return string
+     */
     private function getComponentHash(string $componentType, int $level, int $item): string
     {
         return md5(implode('|', [$componentType, $level, $item]));
