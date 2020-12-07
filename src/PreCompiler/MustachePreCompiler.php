@@ -43,7 +43,7 @@ class MustachePreCompiler implements PreCompilerInterface
      */
     private function parseOutTags(string $source): void
     {
-        $outTagCount = preg_match_all('/\{\{\s(\$[^\s]+)\s\}\}/Us', $source, $matches, PREG_SET_ORDER);
+        $outTagCount = preg_match_all('/\{\{\s([^}]+)\s\}\}/Us', $source, $matches, PREG_SET_ORDER);
         if ($outTagCount === 0) {
             return;
         }
@@ -59,7 +59,7 @@ class MustachePreCompiler implements PreCompilerInterface
      */
     private function parseUnescapedOutTags(string $source): void
     {
-        $outTagCount = preg_match_all('/\{\!\!\s(\$[^\s]+)\s\!\!\}/Us', $source, $matches, PREG_SET_ORDER);
+        $outTagCount = preg_match_all('/\{\!\!\s([^}]+)\s\!\!\}/Us', $source, $matches, PREG_SET_ORDER);
         if ($outTagCount === 0) {
             return;
         }
