@@ -45,7 +45,7 @@ class LayoutPreCompiler implements PreCompilerInterface
      */
     private function compileExtends(string $viewContent): string
     {
-        $matchCount = preg_match('/<!-- extends "(.+)" -->/Usi', $viewContent, $matches);
+        $matchCount = preg_match('/\{%\sextends\(\'(.+)\'\)\s%\}/Usi', $viewContent, $matches);
         if ($matchCount !== 1) {
             return $viewContent;
         }
@@ -56,12 +56,13 @@ class LayoutPreCompiler implements PreCompilerInterface
             throw new TemplatingException(sprintf('Layout file not found on disk (%s)', $pathToLayout));
         }
         $layoutContent = file_get_contents($pathToLayout);
-        if (strpos($layoutContent, '<!-- $view -->') === false) {
+        if (strpos($layoutContent, '{% $view %}') === false) {
             throw new TemplatingException(
                 sprintf('Invalid Layout file. View placeholder missing. (%s)', $pathToLayout)
             );
         }
-        $viewContent = str_replace('<!-- $view -->', $viewContent, $layoutContent);
+        $viewContent = str_replace($matches[0], '', $viewContent);
+        $viewContent = str_replace('{% $view %}', $viewContent, $layoutContent);
 
 
         return $viewContent;
@@ -76,7 +77,7 @@ class LayoutPreCompiler implements PreCompilerInterface
      */
     private function compileIncludes(string $viewContent): string
     {
-        $includePattern = '/\{\{\sinclude\(\'(.+)\'\)\s\}\}/Us';
+        $includePattern = '/\{%\sinclude\(\'(.+)\'\)\s%\}/Us';
         $matchCount = preg_match_all($includePattern, $viewContent, $matches, PREG_SET_ORDER);
         if ($matchCount === 0) {
             return $viewContent;

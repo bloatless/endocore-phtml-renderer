@@ -21,7 +21,7 @@ class SubviewPreCompiler implements PreCompilerInterface
      */
     public function compile(string $viewContent, array $templateVariables = []): string
     {
-        $includePattern = '/\{\{\sview\(\'(?<viewName>.+)\'(?:,\s\[(?<arguments>.*)\])?\)\s\}\}/Us';
+        $includePattern = '/\{%\sview\(\'(?<viewName>.+)\'(?:,\s\[(?<arguments>.*)\])?\)\s%\}/Us';
         $matchCount = preg_match_all($includePattern, $viewContent, $matches, PREG_SET_ORDER);
         if ($matchCount === 0) {
             return $viewContent;

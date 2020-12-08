@@ -53,8 +53,8 @@ class Factory
         $renderer->setViewPath($pathViews);
         $renderer->setCompilePath($compilePath);
         $renderer->addPreCompiler($layoutPreCompiler);
-        $renderer->addPreCompiler($mustachePreCompiler);
         $renderer->addPreCompiler($subviewPreCompiler);
+        $renderer->addPreCompiler($mustachePreCompiler);
         $renderer->addPreCompiler($viewComponentPreCompiler);
 
         return $renderer;
