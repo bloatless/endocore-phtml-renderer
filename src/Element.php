@@ -108,7 +108,7 @@ class Element
     public function getAttribute(string $attributeName, $default = null)
     {
         if ($this->hasAttribute($attributeName)) {
-            return $attributeName;
+            return $this->attributes[$attributeName];
         }
 
         return $default;
