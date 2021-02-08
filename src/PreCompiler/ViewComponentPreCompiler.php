@@ -50,13 +50,16 @@ class ViewComponentPreCompiler implements PreCompilerInterface
             if (!isset($tagCounts[$componentName])) {
                 $tagCounts[$componentName] = 0;
             }
-            $attributes = base64_encode(trim($match['attributes']));
+            $attributes = $this->getPrimitiveAttributes($match['attributes']);
+            $attributes = base64_encode($attributes);
+            $data = $this->getDataAttributes($match['attributes']);
             $componentHash = $this->getComponentHash($componentName, 0, $tagCounts[$componentName]);
             $uniqueTag = sprintf(
-                '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\']); ?>',
+                '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\'], \'data\' => %s]); ?>',
                 $componentHash,
                 $componentName,
                 $attributes,
+                $data,
             );
             $uniqueTag .= sprintf(
                 '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'end\']); ?>',
@@ -108,7 +111,8 @@ class ViewComponentPreCompiler implements PreCompilerInterface
                 'tag' => $item[0][0],
                 'offset' => $item[0][1],
                 'component' => $item['component'][0],
-                'attributes' => $item['attributes'][0] ?? '',
+                'attributes' => $this->getPrimitiveAttributes($item['attributes'][0] ?? ''),
+                'data' => $this->getDataAttributes($item['attributes'][0] ?? ''),
                 'type' => 'opening',
             ];
         }
@@ -167,10 +171,11 @@ class ViewComponentPreCompiler implements PreCompilerInterface
             if ($tag->type === 'opening') {
                 $attributes = base64_encode(trim($tag->attributes));
                 $uniqueTag = sprintf(
-                    '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\']); ?>',
+                    '<?php $this->call(\'viewComponent\', [\'hash\' => \'%s\', \'type\' => \'%s\', \'action\' => \'start\', \'attributes\' => \'%s\', \'data\' => %s]); ?>',
                     $componentHash,
                     $tag->component,
                     $attributes,
+                    $tag->data,
                 );
             }
             if ($tag->type === 'closing') {
@@ -198,5 +203,56 @@ class ViewComponentPreCompiler implements PreCompilerInterface
     private function getComponentHash(string $componentType, int $level, int $item): string
     {
         return md5(implode('|', [$componentType, $level, $item]));
+    }
+
+    /**
+     * Collects primitive attributes from all attributes passed to the component.
+     * Primitive attributes are simple text attributes like e.g.: foo="bar"
+     *
+     * @param string $rawAttributes
+     * @return string
+     */
+    private function getPrimitiveAttributes(string $rawAttributes): string
+    {
+        $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $rawAttributes, $attributeMatches, PREG_SET_ORDER);
+        if ($attrCount === 0) {
+            return '';
+        }
+
+        $attributes = [];
+        foreach ($attributeMatches as $attr) {
+            if (substr($attr[1], 0, 1) === ':') {
+                continue;
+            }
+            $attributes[] = trim($attr[0]);
+        }
+
+        return implode(' ', $attributes);
+    }
+
+    /**
+     * Collects data attributes from all attributes passed to the component.
+     * Data attributes start with a colon and contain a variable, like e.g: :foo="$bar"
+     * The response of this method is a string containing an php-array, e.g: ['foo' => $bar]
+     *
+     * @param string $rawAttributes
+     * @return string
+     */
+    private function getDataAttributes(string $rawAttributes): string
+    {
+        $attrCount = preg_match_all('/(:[\w-]+)="([^"]+)"/Us', $rawAttributes, $attributeMatches, PREG_SET_ORDER);
+        if ($attrCount === 0) {
+            return '[]';
+        }
+
+        $dataAttributes = '[';
+        foreach ($attributeMatches as $attr) {
+            $attrName = substr($attr[1], 1);
+            $attrValue = $attr[2];
+            $dataAttributes .= sprintf("'%s' => %s,", $attrName, $attrValue);
+        }
+        $dataAttributes .= ']';
+
+        return $dataAttributes;
     }
 }

@@ -32,6 +32,13 @@ abstract class Component
     protected array $attributes = [];
 
     /**
+     * Data passed to the component.
+     *
+     * @var array
+     */
+    protected array $data = [];
+
+    /**
      * Elements found within the component content.
      *
      * @var array $elements
@@ -67,6 +74,15 @@ abstract class Component
     public function setAttributes(array $attributes): void
     {
         $this->attributes = $attributes;
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     */
+    public function setData(array $data): void
+    {
+        $this->data = $data;
     }
 
     /**

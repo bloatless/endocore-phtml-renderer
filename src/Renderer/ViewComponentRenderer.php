@@ -67,6 +67,7 @@ class ViewComponentRenderer implements RendererInterface
         $componentType = $arguments['type'] ?? '';
         $componentAction = $arguments['action'] ?? '';
         $attributesString = $arguments['attributes'] ?? '';
+        $data = $arguments['data'] ?? [];
         if (empty($componentHash)) {
             throw new TemplatingException('Component hash can not be empty.');
         }
@@ -79,6 +80,7 @@ class ViewComponentRenderer implements RendererInterface
             case 'start':
                 $attributes = $this->getAttributes($attributesString);
                 $this->viewComponents[$componentHash]->setAttributes($attributes);
+                $this->viewComponents[$componentHash]->setData($data);
                 return $this->viewComponents[$componentHash]->start();
             case 'end':
                 return $this->viewComponents[$componentHash]->end();
@@ -116,6 +118,7 @@ class ViewComponentRenderer implements RendererInterface
         if (empty($attributeString)) {
             return [];
         }
+
         $attributeString = base64_decode($attributeString);
         $attrCount = preg_match_all('/([\w:-]+)="([^"]+)"/Us', $attributeString, $attributeMatches, PREG_SET_ORDER);
         if ($attrCount === 0) {
@@ -124,12 +127,7 @@ class ViewComponentRenderer implements RendererInterface
 
         $attributes = [];
         foreach ($attributeMatches as $attr) {
-            if (substr($attr[1], 0, 1) === ':') {
-                $tmplVarKey = substr($attr[2], 1);
-                $attributes[$tmplVarKey] = $this->templateVariables[$tmplVarKey] ?? null;
-            } else {
-                $attributes[$attr[1]] = $attr[2];
-            }
+            $attributes[$attr[1]] = $attr[2];
         }
 
         return $attributes;
