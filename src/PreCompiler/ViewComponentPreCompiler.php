@@ -85,7 +85,7 @@ class ViewComponentPreCompiler implements PreCompilerInterface
     {
         // collect opening tags
         $openingTagsCount = preg_match_all(
-            '/<vc-(?<component>[\w-]+)(?<attributes>\s[^>]*)?>/Us',
+            '/<vc-(?<component>[\w-]+)(?<attributes>\s.*)?(?<!-)>/Us',
             $content,
             $openingTags,
             PREG_OFFSET_CAPTURE|PREG_SET_ORDER
