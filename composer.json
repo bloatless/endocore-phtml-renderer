@@ -1,12 +1,11 @@
 {
-    "name": "bloatless/endocore-phtml-renderer",
-    "description": "Phtml renderer component for the Endocore framework.",
+    "name": "bloatless/template-engine",
+    "description": "Bloatless Template Engine.",
     "keywords": [
         "php",
         "phtml",
         "templating",
         "renderer",
-        "endocore",
         "bloatless"
     ],
     "license": "MIT",
@@ -19,11 +18,16 @@
     ],
     "autoload": {
         "psr-4": {
-            "Bloatless\\Endocore\\Components\\PhtmlRenderer\\": "src/"
+            "Bloatless\\TemplateEngine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bloatless\\TemplateEngine\\Tests\\": "tests/"
         }
     },
     "require": {
-        "php": "^7.2"
+        "php": "^8.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.3"
