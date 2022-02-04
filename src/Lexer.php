@@ -8,14 +8,48 @@ require_once __DIR__ . '/TemplateEngineException.php';
 
 class Lexer
 {
-    public const TOKEN_VARIABLE = 1;
-    public const TOKEN_BLOCK = 2;
+    // token groups
+    public const TG_VARIABLE = 1;
+    public const TG_BLOCK = 2;
+
+    // token types
+    public const TT_ECHO = 1;
+    public const TT_IF = 2;
+    public const TT_ELSE = 3;
+    public const TT_ENDIF = 4;
 
     public function __invoke(string $viewContent): array
     {
         $tokens = $this->tokenize($viewContent);
         $tokens = $this->combineTokens($tokens);
         $tokens = $this->attachTokenContent($tokens, $viewContent);
+        $tokens = $this->attachTokenType($tokens);
+
+        return $tokens;
+    }
+
+    private function attachTokenType(array $tokens): array
+    {
+        foreach ($tokens as $i => $token) {
+            if (str_starts_with($token['content'], '{{ $')) {
+                $tokens[$i]['type'] = self::TT_ECHO;
+                continue;
+            }
+            if (str_starts_with($token['content'], '{% if')) {
+                $tokens[$i]['type'] = self::TT_IF;
+                continue;
+            }
+            if ($token['content'] === '{% else %}') {
+                $tokens[$i]['type'] = self::TT_ELSE;
+                continue;
+            }
+            if ($token['content'] === '{% endif %}') {
+                $tokens[$i]['type'] = self::TT_ENDIF;
+                continue;
+            }
+
+            throw new TemplateEngineException(sprintf('Unknown token type. (%s)', $token['content']));
+        }
 
         return $tokens;
     }
@@ -35,7 +69,7 @@ class Lexer
         $combined = [];
         $buffer = [];
         foreach ($tokens as $i => $token) {
-            if ($token['type'] === self::TOKEN_VARIABLE) {
+            if ($token['group'] === self::TG_VARIABLE) {
                 if ($token['value'] === '{{') {
                     $buffer = $token;
                     continue;
@@ -45,7 +79,7 @@ class Lexer
                         throw new TemplateEngineException('Token Error: Found closing variable but opening is missing.');
                     }
                     $combined[] = [
-                        'type' => self::TOKEN_VARIABLE,
+                        'group' => self::TG_VARIABLE,
                         'offset_start' => $buffer['offset'],
                         'offset_end' => $token['offset'],
                     ];
@@ -54,7 +88,7 @@ class Lexer
                 }
             }
 
-            if ($token['type'] === self::TOKEN_BLOCK) {
+            if ($token['group'] === self::TG_BLOCK) {
                 if ($token['value'] === '{%') {
                     $buffer = $token;
                     continue;
@@ -64,7 +98,7 @@ class Lexer
                         throw new TemplateEngineException('Token Error: Found closing block but opening is missing.');
                     }
                     $combined[] = [
-                        'type' => self::TOKEN_BLOCK,
+                        'group' => self::TG_BLOCK,
                         'offset_start' => $buffer['offset'],
                         'offset_end' => $token['offset'],
                     ];
@@ -95,7 +129,7 @@ class Lexer
                 }
                 if ($buffer === '{') {
                     $tokens[] = [
-                        'type' => self::TOKEN_VARIABLE,
+                        'group' => self::TG_VARIABLE,
                         'offset' => $pos - 1,
                         'value' => '{{'
                     ];
@@ -113,7 +147,7 @@ class Lexer
                 }
                 if ($buffer === '{') {
                     $tokens[] = [
-                        'type' => self::TOKEN_BLOCK,
+                        'group' => self::TG_BLOCK,
                         'offset' => $pos - 1,
                         'value' => '{%'
                     ];
@@ -131,7 +165,7 @@ class Lexer
                 }
                 if ($buffer === '}') {
                     $tokens[] = [
-                        'type' => self::TOKEN_VARIABLE,
+                        'group' => self::TG_VARIABLE,
                         'offset' => $pos + 1,
                         'value' => '}}'
                     ];
@@ -141,7 +175,7 @@ class Lexer
                 }
                 if ($buffer === '%') {
                     $tokens[] = [
-                        'type' => self::TOKEN_BLOCK,
+                        'group' => self::TG_BLOCK,
                         'offset' => $pos + 1,
                         'value' => '%}'
                     ];

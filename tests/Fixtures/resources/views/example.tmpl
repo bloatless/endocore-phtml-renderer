@@ -1,9 +1,6 @@
-<p>{{ $foo }}</p>
-
-<p>chances of error are about 99.9% ;)</p>
-
-{% if ($bar > 1) %}
-    <p>greater than one</p>
+{% if (1 == 2) %}
+    <p>foo</p>
+    {{ $foo }}
 {% else %}
-    <p>less or equal than one</p>
+    {{ $bar }}
 {% endif %}

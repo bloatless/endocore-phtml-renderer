@@ -9,6 +9,7 @@ require_once __DIR__ . '/Lexer.php';
 require_once __DIR__ . '/Parser.php';
 require_once __DIR__ . '/TemplateEngine.php';
 require_once __DIR__ . '/TemplateEngineException.php';
+require_once __DIR__ . '/ViewRenderer.php';
 
 class TemplateEngineFactory
 {
@@ -22,6 +23,9 @@ class TemplateEngineFactory
         if (empty($config['templates']['path_views'])) {
             throw new TemplateEngineException('Invalid value for "path_views". Check config file!');
         }
+        if (empty($config['templates']['path_compile'])) {
+            throw new TemplateEngineException('Invalid value for "path_compile". Check config file!');
+        }
 
         $this->config = $config['templates'];
     }
@@ -31,12 +35,14 @@ class TemplateEngineFactory
         $lexer = new Lexer();
         $parser = new Parser();
         $compiler = new Compiler();
+        $viewRenderer = new ViewRenderer();
 
         $templateEngine = new TemplateEngine(
             $this->config,
             $lexer,
             $parser,
-            $compiler
+            $compiler,
+            $viewRenderer
         );
 
         return $templateEngine;

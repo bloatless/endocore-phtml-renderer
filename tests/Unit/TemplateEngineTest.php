@@ -14,6 +14,11 @@ class TemplateEngineTest extends TestCase
         $config = include __DIR__ . '/../Fixtures/config.php';
         $factory = new TemplateEngineFactory($config);
         $engine = $factory->make();
-        $foo = $engine->render('example.tmpl', []);
+        $foo = $engine->render('example.tmpl', [
+            'foo' => 'Hello World!',
+            'bar' => 'Hello Universe!',
+        ]);
+
+        print_r($foo);
     }
 }
