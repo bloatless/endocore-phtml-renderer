@@ -9,3 +9,7 @@
 
     {{ include('partials/button') }}
 {% endif %}
+
+{% foreach ($items as $item) %}
+    {{ $item->name }}
+{% endforeach %}

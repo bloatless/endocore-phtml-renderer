@@ -2,6 +2,8 @@
 
 PHtml Renderer component for the Endocore framework.
 
+## Usage
+
 ### Output
 
 ```
@@ -22,8 +24,25 @@ PHtml Renderer component for the Endocore framework.
 {% endif %}
 ```
 
+### Loops
+
+```
+{% foreach ($items as $item) %}
+    ...
+{% endforeach %}
+```
+
+
 ### Includes
 
 ```
 {{ include('some/view') }}
 ```
+
+## Todo
+
+- Loops
+  - For Loop
+  - Loop-Else (`forelse`)
+- Extends/Inheritance
+- Caching

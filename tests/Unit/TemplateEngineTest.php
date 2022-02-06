@@ -17,8 +17,14 @@ class TemplateEngineTest extends TestCase
         $foo = $engine->render('example.tmpl', [
             'foo' => 'Hello World!',
             'bar' => 'Hello Universe!',
+            'items' => [
+                (object) ['name' => 'Homer'],
+                (object) ['name' => 'Marge'],
+            ]
         ]);
 
+
+        print_r($foo);
 
 
         $this->assertStringContainsString('Hello Universe!', $foo);

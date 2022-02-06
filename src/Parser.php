@@ -8,14 +8,18 @@ require_once __DIR__ . '/Node/AbstractNode.php';
 require_once __DIR__ . '/Node/EchoNode.php';
 require_once __DIR__ . '/Node/ElseifNode.php';
 require_once __DIR__ . '/Node/ElseNode.php';
+require_once __DIR__ . '/Node/EndforeachNode.php';
 require_once __DIR__ . '/Node/EndifNode.php';
+require_once __DIR__ . '/Node/ForeachNode.php';
 require_once __DIR__ . '/Node/IfNode.php';
 require_once __DIR__ . '/Node/IncludeNode.php';
 
 use Bloatless\TemplateEngine\Node\EchoNode;
 use Bloatless\TemplateEngine\Node\ElseifNode;
 use Bloatless\TemplateEngine\Node\ElseNode;
+use Bloatless\TemplateEngine\Node\EndforeachNode;
 use Bloatless\TemplateEngine\Node\EndifNode;
+use Bloatless\TemplateEngine\Node\ForeachNode;
 use Bloatless\TemplateEngine\Node\IfNode;
 use Bloatless\TemplateEngine\Node\IncludeNode;
 
@@ -42,6 +46,7 @@ class Parser
         $nodes = [];
         $openNodes = [
             Lexer::TT_IF => 0,
+            Lexer::TT_FOREACH => 0,
         ];
 
         foreach ($tokens as $token) {
@@ -55,6 +60,10 @@ class Parser
                 case Lexer::TT_IF:
                     $nodes[] = new IfNode($this->templateEngine, $token);
                     $openNodes[Lexer::TT_IF]++;
+                    break;
+                case Lexer::TT_FOREACH:
+                    $nodes[] = new ForeachNode($this->templateEngine, $token);
+                    $openNodes[Lexer::TT_FOREACH]++;
                     break;
                 case Lexer::TT_ELSE:
                     if ($openNodes[Lexer::TT_IF] === 0) {
@@ -74,6 +83,14 @@ class Parser
                     }
                     $nodes[] = new EndifNode($this->templateEngine, $token);
                     $openNodes[Lexer::TT_IF]--;
+                    break;
+                case Lexer::TT_ENDFOREACH:
+                    if ($openNodes[Lexer::TT_FOREACH] === 0) {
+                        throw new TemplateEngineException('Found endforeach-node without matching foreach-node.');
+                    }
+                    $nodes[] = new EndforeachNode($this->templateEngine, $token);
+                    $openNodes[Lexer::TT_FOREACH]--;
+                    break;
             }
         }
 

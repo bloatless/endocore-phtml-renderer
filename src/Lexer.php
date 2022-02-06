@@ -19,6 +19,8 @@ class Lexer
     public const TT_ENDIF = 4;
     public const TT_ELSEIF = 5;
     public const TT_INCLUDE = 6;
+    public const TT_FOREACH = 7;
+    public const TT_ENDFOREACH = 8;
 
     public function __invoke(string $viewContent): array
     {
@@ -49,12 +51,20 @@ class Lexer
                 $tokens[$i]['type'] = self::TT_ELSEIF;
                 continue;
             }
+            if (str_starts_with($token['content'], '{% foreach')) {
+                $tokens[$i]['type'] = self::TT_FOREACH;
+                continue;
+            }
             if ($token['content'] === '{% else %}') {
                 $tokens[$i]['type'] = self::TT_ELSE;
                 continue;
             }
             if ($token['content'] === '{% endif %}') {
                 $tokens[$i]['type'] = self::TT_ENDIF;
+                continue;
+            }
+            if ($token['content'] === '{% endforeach %}') {
+                $tokens[$i]['type'] = self::TT_ENDFOREACH;
                 continue;
             }
 
