@@ -1,6 +1,7 @@
 {% if (1 == 2) %}
     <p>foo</p>
     {{ $foo }}
+    {{ $foo|raw }}
 {% elseif (1 == 3) %}
     <p>elseif yo</p>
 {% else %}
