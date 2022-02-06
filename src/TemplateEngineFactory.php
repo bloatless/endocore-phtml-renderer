@@ -34,7 +34,9 @@ class TemplateEngineFactory
     {
         $lexer = new Lexer();
         $parser = new Parser();
-        $compiler = new Compiler();
+        $compiler = new Compiler(
+            $this->config['path_compile']
+        );
         $viewRenderer = new ViewRenderer();
 
         $templateEngine = new TemplateEngine(

@@ -19,6 +19,8 @@ class TemplateEngineTest extends TestCase
             'bar' => 'Hello Universe!',
         ]);
 
-        print_r($foo);
+
+
+        $this->assertStringContainsString('Hello Universe!', $foo);
     }
 }

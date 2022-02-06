@@ -9,7 +9,7 @@ require_once __DIR__ . '/TemplateEngineException.php';
 class Lexer
 {
     // token groups
-    public const TG_VARIABLE = 1;
+    public const TG_COMMAND = 1;
     public const TG_BLOCK = 2;
 
     // token types
@@ -17,6 +17,8 @@ class Lexer
     public const TT_IF = 2;
     public const TT_ELSE = 3;
     public const TT_ENDIF = 4;
+    public const TT_ELSEIF = 5;
+    public const TT_INCLUDE = 6;
 
     public function __invoke(string $viewContent): array
     {
@@ -35,8 +37,16 @@ class Lexer
                 $tokens[$i]['type'] = self::TT_ECHO;
                 continue;
             }
+            if (str_starts_with($token['content'], '{{ include(')) {
+                $tokens[$i]['type'] = self::TT_INCLUDE;
+                continue;
+            }
             if (str_starts_with($token['content'], '{% if')) {
                 $tokens[$i]['type'] = self::TT_IF;
+                continue;
+            }
+            if (str_starts_with($token['content'], '{% elseif')) {
+                $tokens[$i]['type'] = self::TT_ELSEIF;
                 continue;
             }
             if ($token['content'] === '{% else %}') {
@@ -69,7 +79,7 @@ class Lexer
         $combined = [];
         $buffer = [];
         foreach ($tokens as $i => $token) {
-            if ($token['group'] === self::TG_VARIABLE) {
+            if ($token['group'] === self::TG_COMMAND) {
                 if ($token['value'] === '{{') {
                     $buffer = $token;
                     continue;
@@ -79,7 +89,7 @@ class Lexer
                         throw new TemplateEngineException('Token Error: Found closing variable but opening is missing.');
                     }
                     $combined[] = [
-                        'group' => self::TG_VARIABLE,
+                        'group' => self::TG_COMMAND,
                         'offset_start' => $buffer['offset'],
                         'offset_end' => $token['offset'],
                     ];
@@ -129,7 +139,7 @@ class Lexer
                 }
                 if ($buffer === '{') {
                     $tokens[] = [
-                        'group' => self::TG_VARIABLE,
+                        'group' => self::TG_COMMAND,
                         'offset' => $pos - 1,
                         'value' => '{{'
                     ];
@@ -165,7 +175,7 @@ class Lexer
                 }
                 if ($buffer === '}') {
                     $tokens[] = [
-                        'group' => self::TG_VARIABLE,
+                        'group' => self::TG_COMMAND,
                         'offset' => $pos + 1,
                         'value' => '}}'
                     ];
